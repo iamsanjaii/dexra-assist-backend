@@ -22,6 +22,7 @@ type Config struct {
 	GoogleClientSecret string `mapstructure:"GOOGLE_CLIENT_SECRET"`
 	GoogleRedirectURL  string `mapstructure:"GOOGLE_REDIRECT_URL"`
 	FrontendURL        string `mapstructure:"FRONTEND_URL"`
+	ChatbotURL         string `mapstructure:"CHATBOT_URL"`
 }
 
 var AppConfig *Config
@@ -45,5 +46,8 @@ func LoadConfig() {
 	// Defaults
 	if AppConfig.Port == "" {
 		AppConfig.Port = "8080"
+	}
+	if AppConfig.ChatbotURL == "" {
+		AppConfig.ChatbotURL = "http://localhost:3001"
 	}
 }

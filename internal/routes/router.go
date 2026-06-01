@@ -20,6 +20,7 @@ func SetupRouter() *gin.Engine {
 		{
 			auth.POST("/login", controllers.Login)
 			auth.GET("/google/login", controllers.GoogleLoginRedirect)
+			auth.GET("/client/google/login", controllers.GoogleClientLoginRedirect)
 			auth.GET("/google/callback", controllers.GoogleCallback)
 			auth.POST("/refresh", controllers.Refresh)
 			auth.POST("/logout", controllers.Logout)

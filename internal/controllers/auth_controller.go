@@ -54,7 +54,12 @@ func getOAuthConfig() *oauth2.Config {
 }
 
 func GoogleLoginRedirect(c *gin.Context) {
-	url := getOAuthConfig().AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	url := getOAuthConfig().AuthCodeURL("admin", oauth2.AccessTypeOffline)
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func GoogleClientLoginRedirect(c *gin.Context) {
+	url := getOAuthConfig().AuthCodeURL("client", oauth2.AccessTypeOffline)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
@@ -75,8 +80,16 @@ func GoogleCallback(c *gin.Context) {
 	c.SetCookie("dexra_access_token", accessToken, 3600*24, "/", "", false, true)
 	c.SetCookie("dexra_refresh_token", refreshToken, 3600*24*7, "/", "", false, true)
 
-	// Redirect back to frontend dashboard
-	c.Redirect(http.StatusTemporaryRedirect, config.AppConfig.FrontendURL+"/dashboard")
+	state := c.Query("state")
+	if state == "client" {
+		targetURL := config.AppConfig.ChatbotURL
+		if targetURL == "" {
+			targetURL = "http://localhost:3001" // Fallback
+		}
+		c.Redirect(http.StatusTemporaryRedirect, targetURL)
+	} else {
+		c.Redirect(http.StatusTemporaryRedirect, config.AppConfig.FrontendURL+"/dashboard")
+	}
 }
 
 func GetMe(c *gin.Context) {
