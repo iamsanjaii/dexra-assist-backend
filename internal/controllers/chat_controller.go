@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dexra/backend/internal/models"
@@ -74,19 +75,26 @@ func HandleChatQuery(c *gin.Context) {
 	if err != nil {
 		utils.Logger.Error("HandleChatQuery failed", zap.String("session", req.SessionID), zap.Error(err))
 		
+		errorResponse := err.Error()
+		if strings.Contains(errorResponse, "429") || strings.Contains(errorResponse, "RESOURCE_EXHAUSTED") || strings.Contains(errorResponse, "Resource exhausted") {
+			errorResponse = "I'm receiving too many requests right now and hit a rate limit. Please wait a moment and try again."
+		} else {
+			errorResponse = "An internal error occurred while processing your request. Please try again later."
+		}
+
 		// Save the error response to the chat history so it persists
 		if sessionObjID, parseErr := primitive.ObjectIDFromHex(req.SessionID); parseErr == nil {
 			errorMsg := &models.ChatMessage{
 				SessionID: sessionObjID,
 				Role:      "assistant",
-				Content:   err.Error(),
+				Content:   errorResponse,
 				CreatedAt: time.Now(),
 			}
 			repositories.CreateChatMessage(c.Request.Context(), errorMsg)
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"response":         err.Error(),
+			"response":         errorResponse,
 			"sources":          []string{},
 			"confidence_score": 0.0,
 		})
