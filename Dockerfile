@@ -23,7 +23,7 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
 # Copy the production environment file
-COPY .env.production .env
+COPY .env.prod .env
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/dexra-backend .
