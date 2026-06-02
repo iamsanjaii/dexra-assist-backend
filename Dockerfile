@@ -18,12 +18,12 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o dexra-backend ./cmd/server
 
 # Step 2: Create a lightweight runtime image
-FROM alpine:latest
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# Install CA certificates for HTTPS requests, and compat libraries for ONNX runtime (Chroma Go)
-RUN apk --no-cache add ca-certificates libstdc++ libc6-compat gcompat
+# Install CA certificates for HTTPS requests, and native glibc libraries for ONNX runtime
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy the production environment file
 COPY .env.prod .env
