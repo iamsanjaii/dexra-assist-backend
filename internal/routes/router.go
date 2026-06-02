@@ -18,7 +18,7 @@ func SetupRouter() *gin.Engine {
 	{
 		auth := v1.Group("/auth")
 		{
-			auth.POST("/login", controllers.Login)
+			auth.POST("/login", middleware.RateLimitMiddleware(), controllers.Login)
 			auth.GET("/google/login", controllers.GoogleLoginRedirect)
 			auth.GET("/client/google/login", controllers.GoogleClientLoginRedirect)
 			auth.GET("/google/callback", controllers.GoogleCallback)
@@ -58,7 +58,7 @@ func SetupRouter() *gin.Engine {
 				chat.POST("/session", controllers.CreateChatSession)
 				chat.GET("/sessions", controllers.GetChatSessions)
 				chat.GET("/history/:session_id", controllers.GetChatHistory)
-				chat.POST("/query", controllers.HandleChatQuery)
+				chat.POST("/query", middleware.RateLimitMiddleware(), controllers.HandleChatQuery)
 			}
 
 			config := protected.Group("/config")
