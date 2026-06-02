@@ -32,7 +32,7 @@ COPY .env.prod .env
 COPY --from=builder /app/dexra-backend .
 
 # Expose the port the app runs on (update if your server uses a different port)
-EXPOSE 9000
+EXPOSE 9008
 
 # Command to run the executable
 CMD ["./dexra-backend"]
