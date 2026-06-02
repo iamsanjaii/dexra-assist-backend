@@ -86,6 +86,26 @@ The platform includes:
 
 ---
 
+
+<img width="1230" height="935" alt="diagram-export" src="https://github.com/user-attachments/assets/2dfdf56e-00f8-45fd-b9c9-f24501f967be" />
+
+
+<img width="1671" height="1189" alt="diagram-export-2-6-2026-1_58_42-pm" src="https://github.com/user-attachments/assets/87369088-d3d2-4484-a2a5-1a6297f097f3" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # System Architecture
 
 ```text
