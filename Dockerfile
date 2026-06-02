@@ -1,8 +1,5 @@
 # Step 1: Build the Go binary
-FROM golang:alpine AS builder
-
-# Install git for resolving Go module dependencies
-RUN apk add --no-cache git
+FROM golang:bookworm AS builder
 
 WORKDIR /app
 
