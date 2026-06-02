@@ -108,14 +108,22 @@ func HandleChatQuery(userID string, sessionID, message string) (*models.ChatMess
 }
 
 func retrieveContext(ctx context.Context, query string) ([]string, []models.Source, error) {
-	// 1. Embed the query using the exact same gemini-embedding-001 helper
-	embValues, err := embedText(ctx, config.AppConfig.GeminiAPIKey, query)
+	aiConfig, err := repositories.GetAIConfig(ctx)
+	provider := "google"
+	apiKey := config.AppConfig.GeminiAPIKey
+	if err == nil && aiConfig.Provider == "openrouter" {
+		provider = "openrouter"
+		apiKey = config.AppConfig.OpenRouterAPIKey
+	}
+
+	// 1. Embed the query using the exact same model used for the active provider
+	embValues, err := embedText(ctx, provider, apiKey, query)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to embed query: %w", err)
 	}
 
-	// 2. Get the collection
-	collection, err := database.GetKnowledgeCollection(ctx)
+	// 2. Get the provider-specific collection
+	collection, err := database.GetKnowledgeCollection(ctx, provider)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get collection: %w", err)
 	}
@@ -140,11 +148,13 @@ func retrieveContext(ctx context.Context, query string) ([]string, []models.Sour
 		metas := results.GetMetadatasGroups()[0]
 		distances := results.GetDistancesGroups()[0]
 
+		threshold := 0.65 // Gemini default
+		if provider == "openrouter" {
+			threshold = 1.2 // OpenAI default for L2 distance (typically 0.5 - 1.3)
+		}
+
 		for i, doc := range docs {
-			// Filter out irrelevant context chunks (distance threshold, e.g. > 0.6 means low similarity)
-			// gemini embeddings usually have distances between 0 (exact match) and 1 (orthogonal)
-			// A typical threshold for "relevant" is < 0.65.
-			if i < len(distances) && distances[i] > 0.65 {
+			if i < len(distances) && float64(distances[i]) > threshold {
 				continue
 			}
 

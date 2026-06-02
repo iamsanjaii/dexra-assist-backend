@@ -30,14 +30,19 @@ func ConnectChromaDB() {
 	utils.Logger.Info("Connected to ChromaDB Cloud successfully")
 }
 
-// GetKnowledgeCollection returns or creates the knowledge_base collection
-func GetKnowledgeCollection(ctx context.Context) (chroma.Collection, error) {
+// GetKnowledgeCollection returns or creates the knowledge_base collection dynamically based on the provider
+func GetKnowledgeCollection(ctx context.Context, provider string) (chroma.Collection, error) {
 	if ChromaClient == nil {
 		utils.Logger.Fatal("ChromaClient is not initialized")
 	}
 
+	collectionName := "knowledge_base_" + provider
+	if provider == "" {
+		collectionName = "knowledge_base_google" // fallback
+	}
+
 	// Use GetOrCreateCollection — atomically gets or creates, avoids nil-database race
-	collection, err := ChromaClient.GetOrCreateCollection(ctx, "knowledge_base")
+	collection, err := ChromaClient.GetOrCreateCollection(ctx, collectionName)
 	if err != nil {
 		return nil, err
 	}

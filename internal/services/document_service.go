@@ -44,9 +44,58 @@ type geminiEmbedResponse struct {
 	} `json:"embedding"`
 }
 
-// embedText calls the Gemini v1 REST API using gemini-embedding-001 (3072-dim).
-// The genai Go SDK uses v1beta by default which has a different model availability.
-func embedText(ctx context.Context, apiKey, text string) ([]float32, error) {
+// OpenRouterEmbedRequest
+type openRouterEmbedRequest struct {
+	Model string `json:"model"`
+	Input string `json:"input"`
+}
+type openRouterEmbedResponse struct {
+	Data []struct {
+		Embedding []float32 `json:"embedding"`
+	} `json:"data"`
+}
+
+// embedText calls the embedding API based on the provider
+func embedText(ctx context.Context, provider, apiKey, text string) ([]float32, error) {
+	if provider == "openrouter" {
+		url := "https://openrouter.ai/api/v1/embeddings"
+		reqBody := openRouterEmbedRequest{
+			Model: "openai/text-embedding-3-small",
+			Input: text,
+		}
+		body, err := json.Marshal(reqBody)
+		if err != nil {
+			return nil, err
+		}
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Authorization", "Bearer "+apiKey)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			raw, _ := io.ReadAll(resp.Body)
+			return nil, fmt.Errorf("openrouter embed API returned %d: %s", resp.StatusCode, string(raw))
+		}
+
+		var result openRouterEmbedResponse
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return nil, err
+		}
+		if len(result.Data) == 0 {
+			return nil, fmt.Errorf("openrouter embed API returned no data")
+		}
+		return result.Data[0].Embedding, nil
+	}
+
 	url := "https://generativelanguage.googleapis.com/v1/models/gemini-embedding-001:embedContent?key=" + apiKey
 
 	reqBody := geminiEmbedRequest{
@@ -238,7 +287,16 @@ func processDocument(id, path, ext string) {
 		utils.Logger.Error("Failed to write total chunk count", zap.Error(err))
 	}
 
-	collection, err := database.GetKnowledgeCollection(ctx)
+	// Determine provider for embedding
+	aiConfig, err := repositories.GetAIConfig(ctx)
+	provider := "google"
+	apiKey := config.AppConfig.GeminiAPIKey
+	if err == nil && aiConfig.Provider == "openrouter" {
+		provider = "openrouter"
+		apiKey = config.AppConfig.OpenRouterAPIKey
+	}
+
+	collection, err := database.GetKnowledgeCollection(ctx, provider)
 	if err != nil {
 		utils.Logger.Error("Failed to get Chroma collection", zap.Error(err))
 		repositories.UpdateDocumentStatus(context.Background(), id, "failed", 0)
@@ -251,8 +309,7 @@ func processDocument(id, path, ext string) {
 	var metadatas []chroma.DocumentMetadata
 
 	for i, chunk := range chunks {
-		// Use v1 REST API — the genai Go SDK uses v1beta which doesn't support text-embedding-004
-		values, err := embedText(ctx, config.AppConfig.GeminiAPIKey, chunk)
+		values, err := embedText(ctx, provider, apiKey, chunk)
 		if err != nil {
 			utils.Logger.Error("Failed to generate embedding", zap.Int("chunk", i), zap.Error(err))
 			continue
