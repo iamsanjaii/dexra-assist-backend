@@ -22,8 +22,8 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Install CA certificates for HTTPS requests (like calling Google/OpenRouter APIs)
-RUN apk --no-cache add ca-certificates
+# Install CA certificates for HTTPS requests, and compat libraries for ONNX runtime (Chroma Go)
+RUN apk --no-cache add ca-certificates libstdc++ libc6-compat gcompat
 
 # Copy the production environment file
 COPY .env.prod .env
