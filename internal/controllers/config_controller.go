@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dexra/backend/internal/models"
+	"github.com/dexra/backend/internal/repositories"
 	"github.com/dexra/backend/internal/services"
 	"github.com/gin-gonic/gin"
 )

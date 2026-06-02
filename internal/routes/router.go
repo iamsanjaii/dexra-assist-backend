@@ -35,6 +35,7 @@ func SetupRouter() *gin.Engine {
 			dashboard := protected.Group("/dashboard")
 			{
 				dashboard.GET("/stats", controllers.GetDashboardStats)
+				dashboard.GET("/activity", controllers.GetActivityFeed)
 			}
 
 			docs := protected.Group("/documents")

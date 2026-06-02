@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/dexra/backend/internal/repositories"
 	"github.com/dexra/backend/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -24,6 +25,18 @@ func CreateQAPair(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to create QA pair"})
 		return
 	}
+
+	userID, _ := c.Get("user_id")
+	var userIDStr string
+	if userID != nil {
+		userIDStr = userID.(string)
+	}
+	// Trim long questions for the log
+	logItem := req.Question
+	if len(logItem) > 30 {
+		logItem = logItem[:27] + "..."
+	}
+	go repositories.LogActivity(userIDStr, "Added Q&A Pair", logItem)
 
 	c.JSON(http.StatusCreated, gin.H{"success": true, "data": qa})
 }

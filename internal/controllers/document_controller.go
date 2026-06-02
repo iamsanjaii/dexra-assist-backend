@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dexra/backend/internal/repositories"
 	"github.com/dexra/backend/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +21,13 @@ func UploadDocument(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to upload document", "error": err.Error()})
 		return
 	}
+
+	userID, _ := c.Get("user_id")
+	var userIDStr string
+	if userID != nil {
+		userIDStr = userID.(string)
+	}
+	go repositories.LogActivity(userIDStr, "Uploaded Document", file.Filename)
 
 	c.JSON(http.StatusCreated, gin.H{"success": true, "data": gin.H{
 		"document_id": doc.ID.Hex(),

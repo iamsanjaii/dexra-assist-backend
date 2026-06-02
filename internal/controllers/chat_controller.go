@@ -2,10 +2,14 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/dexra/backend/internal/models"
+	"github.com/dexra/backend/internal/repositories"
 	"github.com/dexra/backend/internal/services"
 	"github.com/dexra/backend/internal/utils"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -69,6 +73,18 @@ func HandleChatQuery(c *gin.Context) {
 	_, botMsg, err := services.HandleChatQuery(userID, req.SessionID, req.Message)
 	if err != nil {
 		utils.Logger.Error("HandleChatQuery failed", zap.String("session", req.SessionID), zap.Error(err))
+		
+		// Save the error response to the chat history so it persists
+		if sessionObjID, parseErr := primitive.ObjectIDFromHex(req.SessionID); parseErr == nil {
+			errorMsg := &models.ChatMessage{
+				SessionID: sessionObjID,
+				Role:      "assistant",
+				Content:   err.Error(),
+				CreatedAt: time.Now(),
+			}
+			repositories.CreateChatMessage(c.Request.Context(), errorMsg)
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"response":         err.Error(),
 			"sources":          []string{},

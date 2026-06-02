@@ -29,3 +29,23 @@ func GetDashboardStats(c *gin.Context) {
 		"aiAnalytics": aiStats,
 	})
 }
+
+// GetActivityFeed returns the recent activity logs
+func GetActivityFeed(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	logs, err := repositories.GetRecentActivityLogs(ctx)
+	if err != nil {
+		// Return empty array on error so UI doesn't crash
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"data":    []interface{}{},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    logs,
+	})
+}
