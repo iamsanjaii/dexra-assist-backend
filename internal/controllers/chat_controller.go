@@ -69,7 +69,11 @@ func HandleChatQuery(c *gin.Context) {
 	_, botMsg, err := services.HandleChatQuery(userID, req.SessionID, req.Message)
 	if err != nil {
 		utils.Logger.Error("HandleChatQuery failed", zap.String("session", req.SessionID), zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to process chat query", "error": err.Error()})
+		c.JSON(http.StatusOK, gin.H{
+			"response":         err.Error(),
+			"sources":          []string{},
+			"confidence_score": 0.0,
+		})
 		return
 	}
 

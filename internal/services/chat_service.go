@@ -392,6 +392,8 @@ func handleGoogleQuery(ctx context.Context, sessionID, message, modelName string
 }
 
 func handleOpenRouterQuery(ctx context.Context, sessionID, message, modelName string) (*models.ChatMessage, error) {
+	startTime := time.Now()
+
 	// 0. Identity shortcut
 	identityPhrases := []string{
 		"who are you", "what are you", "introduce yourself", "your name",
@@ -516,6 +518,14 @@ func handleOpenRouterQuery(ctx context.Context, sessionID, message, modelName st
 		return nil, errors.New("invalid OpenRouter response format")
 	}
 
+	// Extract usage stats
+	var promptTokens, completionTokens, totalTokens int
+	if usage, ok := openRouterResp["usage"].(map[string]interface{}); ok {
+		if pt, ok := usage["prompt_tokens"].(float64); ok { promptTokens = int(pt) }
+		if ct, ok := usage["completion_tokens"].(float64); ok { completionTokens = int(ct) }
+		if tt, ok := usage["total_tokens"].(float64); ok { totalTokens = int(tt) }
+	}
+
 	// 6. Save Bot Message
 	botMsg := &models.ChatMessage{
 		SessionID: parseObjectID(sessionID),
@@ -525,6 +535,24 @@ func handleOpenRouterQuery(ctx context.Context, sessionID, message, modelName st
 		CreatedAt: time.Now(),
 	}
 	_ = repositories.CreateChatMessage(ctx, botMsg)
+
+	// 7. Save Usage Log asynchronously
+	go func() {
+		bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		
+		usageLog := &models.AIUsageLog{
+			SessionID:        parseObjectID(sessionID),
+			Query:            message,
+			Model:            modelName,
+			PromptTokens:     promptTokens,
+			CompletionTokens: completionTokens,
+			TotalTokens:      totalTokens,
+			ResponseTimeMs:   time.Since(startTime).Milliseconds(),
+			CreatedAt:        time.Now(),
+		}
+		_ = repositories.CreateAIUsageLog(bgCtx, usageLog)
+	}()
 
 	return botMsg, nil
 }

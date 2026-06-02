@@ -70,10 +70,15 @@ func GoogleCallback(c *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, _, err := services.GoogleLoginCodeFlow(c.Request.Context(), getOAuthConfig(), code)
+	accessToken, refreshToken, authUser, err := services.GoogleLoginCodeFlow(c.Request.Context(), getOAuthConfig(), code)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": err.Error()})
 		return
+	}
+
+	// Log login activity
+	if authUser != nil {
+		go repositories.LogActivity(authUser.ID.Hex(), "Signed in", "via Google")
 	}
 
 	// Set HTTP-Only cookies for the tokens

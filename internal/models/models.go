@@ -60,3 +60,24 @@ type AIConfig struct {
 	Provider string             `bson:"provider" json:"provider"`
 	Model    string             `bson:"model" json:"model"`
 }
+
+type AIUsageLog struct {
+	ID               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	SessionID        primitive.ObjectID `bson:"session_id" json:"session_id"`
+	Query            string             `bson:"query" json:"query"`
+	Model            string             `bson:"model" json:"model"`
+	PromptTokens     int                `bson:"prompt_tokens" json:"prompt_tokens"`
+	CompletionTokens int                `bson:"completion_tokens" json:"completion_tokens"`
+	TotalTokens      int                `bson:"total_tokens" json:"total_tokens"`
+	ResponseTimeMs   int64              `bson:"response_time_ms" json:"response_time_ms"`
+	CreatedAt        time.Time          `bson:"created_at" json:"created_at"`
+}
+
+type ActivityLog struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	UserID    primitive.ObjectID `bson:"user_id,omitempty" json:"user_id,omitempty"`
+	Action    string             `bson:"action" json:"action"`
+	Item      string             `bson:"item" json:"item"`
+	Time      string             `bson:"time" json:"time"` // formatted time (e.g., "Just now", "2 hours ago") to easily send to frontend MVP
+	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
+}

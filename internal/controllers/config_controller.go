@@ -27,5 +27,13 @@ func UpdateAIConfig(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update AI config"})
 		return
 	}
+
+	userID, _ := c.Get("user_id")
+	var userIDStr string
+	if userID != nil {
+		userIDStr = userID.(string)
+	}
+	go repositories.LogActivity(userIDStr, "Updated Settings", "AI Provider changed")
+
 	c.JSON(http.StatusOK, config)
 }

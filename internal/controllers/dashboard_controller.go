@@ -15,6 +15,8 @@ func GetDashboardStats(c *gin.Context) {
 	totalQA, _ := repositories.GetTotalQAPairs(ctx)
 	totalConv, _ := repositories.GetTotalConversations(ctx)
 	activeSources, _ := repositories.GetActiveKnowledgeSources(ctx)
+	
+	aiStats, _ := repositories.GetAIAnalyticsStats(ctx)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -24,5 +26,6 @@ func GetDashboardStats(c *gin.Context) {
 			"totalConversations":     totalConv,
 			"activeKnowledgeSources": activeSources,
 		},
+		"aiAnalytics": aiStats,
 	})
 }
