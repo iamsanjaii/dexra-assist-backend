@@ -23,6 +23,8 @@ type Config struct {
 	GoogleRedirectURL  string `mapstructure:"GOOGLE_REDIRECT_URL"`
 	FrontendURL        string `mapstructure:"FRONTEND_URL"`
 	ChatbotURL         string `mapstructure:"CHATBOT_URL"`
+	CookieDomain       string `mapstructure:"COOKIE_DOMAIN"`
+	SecureCookies      bool   `mapstructure:"SECURE_COOKIES"`
 }
 
 var AppConfig *Config

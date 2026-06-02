@@ -82,8 +82,8 @@ func GoogleCallback(c *gin.Context) {
 	}
 
 	// Set HTTP-Only cookies for the tokens
-	c.SetCookie("dexra_access_token", accessToken, 3600*24, "/", "", false, true)
-	c.SetCookie("dexra_refresh_token", refreshToken, 3600*24*7, "/", "", false, true)
+	c.SetCookie("dexra_access_token", accessToken, 3600*24, "/", config.AppConfig.CookieDomain, config.AppConfig.SecureCookies, true)
+	c.SetCookie("dexra_refresh_token", refreshToken, 3600*24*7, "/", config.AppConfig.CookieDomain, config.AppConfig.SecureCookies, true)
 
 	state := c.Query("state")
 	if state == "client" {
@@ -122,7 +122,7 @@ func Refresh(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	c.SetCookie("dexra_access_token", "", -1, "/", "", false, true)
-	c.SetCookie("dexra_refresh_token", "", -1, "/", "", false, true)
+	c.SetCookie("dexra_access_token", "", -1, "/", config.AppConfig.CookieDomain, config.AppConfig.SecureCookies, true)
+	c.SetCookie("dexra_refresh_token", "", -1, "/", config.AppConfig.CookieDomain, config.AppConfig.SecureCookies, true)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Logged out successfully"})
 }
