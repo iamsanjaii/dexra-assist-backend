@@ -182,7 +182,7 @@ func retrieveContext(ctx context.Context, query string) ([]string, []models.Sour
 
 func constructPrompt(message string, contextChunks []string, qaPairs []models.QAPair, prevMessages []models.ChatMessage) string {
 	// Basic prompt structure
-	prompt := "You are Dexra, a helpful AI assistant. Your goal is to provide accurate and helpful answers based on the provided context. Do not go outside the context, and do not mention that you are using context.\n\n"
+	prompt := "You are Dexra, a helpful AI assistant. Your goal is to provide accurate and helpful answers based on the provided context. Do not go outside the context. If the context does not contain enough information to answer, reply exactly with: 'I couldn't find sufficient information about that in the uploaded knowledge base.' Use Markdown for formatting, especially for lists, steps, and headers. Do not mention that you are using context.\n\n"
 
 	// Add Custom Q&A Rules
 	if len(qaPairs) > 0 {
@@ -432,7 +432,7 @@ func handleOpenRouterQuery(ctx context.Context, sessionID, message, modelName st
 	}
 
 	// 4. Construct system prompt
-	systemPrompt := "You are Dexra Assistant, an AI assistant for the Dexra platform. Your job is to answer questions using ONLY the provided context from the knowledge base. If the context does not contain enough information to answer, say so honestly. Be concise, factual, and helpful. Do not make up information."
+	systemPrompt := "You are Dexra Assistant, an AI assistant for the Dexra platform. Your job is to answer questions using ONLY the provided context from the knowledge base. If the context does not contain enough information to answer, reply exactly with: 'I couldn't find sufficient information about that in the uploaded knowledge base.' Use Markdown for formatting, especially for lists, steps, and headers. Be concise, factual, and helpful. Do not make up information."
 
 	qaPairs, _ := repositories.GetQAPairs(ctx)
 	if len(qaPairs) > 0 {
