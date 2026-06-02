@@ -41,9 +41,10 @@ type ChatSession struct {
 }
 
 type Source struct {
-	DocumentID string `json:"document_id" bson:"document_id"`
-	Name       string `json:"name" bson:"name"`
-	Chunk      string `json:"chunk" bson:"chunk"`
+	DocumentID  string `json:"document_id" bson:"document_id"`
+	Name        string `json:"name" bson:"name"`
+	Chunk       string `json:"chunk" bson:"chunk"`
+	StoragePath string `json:"storage_path,omitempty" bson:"storage_path,omitempty"`
 }
 
 type ChatMessage struct {

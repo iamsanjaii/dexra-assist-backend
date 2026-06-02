@@ -162,6 +162,7 @@ func retrieveContext(ctx context.Context, query string) ([]string, []models.Sour
 			contextChunks = append(contextChunks, contentStr)
 			
 			filename := "Document"
+			storagePath := ""
 			if len(metas) > i {
 				if metaFile, ok := metas[i].GetString("filename"); ok {
 					filename = metaFile
@@ -169,6 +170,7 @@ func retrieveContext(ctx context.Context, query string) ([]string, []models.Sour
 					// Fetch real filename from MongoDB
 					if doc, err := repositories.GetDocumentByID(ctx, metaDocId); err == nil {
 						filename = doc.Filename
+						storagePath = doc.StoragePath
 					} else {
 						filename = "doc_" + metaDocId[:8]
 					}
@@ -178,9 +180,10 @@ func retrieveContext(ctx context.Context, query string) ([]string, []models.Sour
 			// Only add unique document sources for the UI
 			if !seenSources[filename] {
 				sources = append(sources, models.Source{
-					DocumentID: "doc_retrieved",
-					Name:       filename,
-					Chunk:      contentStr,
+					DocumentID:  "doc_retrieved",
+					Name:        filename,
+					Chunk:       contentStr,
+					StoragePath: storagePath,
 				})
 				seenSources[filename] = true
 			}

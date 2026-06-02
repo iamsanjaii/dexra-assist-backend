@@ -17,6 +17,9 @@ func SetupRouter() *gin.Engine {
 	r.Use(middleware.CORSMiddleware())
 	r.Use(middleware.SecurityHeadersMiddleware())
 
+	// Serve the uploads directory statically
+	r.Static("/uploads", "./uploads")
+
 	v1 := r.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
