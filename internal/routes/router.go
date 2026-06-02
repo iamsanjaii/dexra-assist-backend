@@ -8,6 +8,9 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.New()
+	
+	// Set a higher limit for multipart forms (50 MB) to allow large document uploads
+	r.MaxMultipartMemory = 50 << 20 
 
 	r.Use(gin.Logger())
 	r.Use(middleware.RecoveryMiddleware())
