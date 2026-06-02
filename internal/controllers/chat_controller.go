@@ -78,6 +78,9 @@ func HandleChatQuery(c *gin.Context) {
 		errorResponse := err.Error()
 		if strings.Contains(errorResponse, "429") || strings.Contains(errorResponse, "RESOURCE_EXHAUSTED") || strings.Contains(errorResponse, "Resource exhausted") {
 			errorResponse = "I'm receiving too many requests right now and hit a rate limit. Please wait a moment and try again."
+		} else if strings.Contains(errorResponse, "security policies") || strings.Contains(errorResponse, "violates") {
+			// Do not mask security violation errors
+			errorResponse = err.Error()
 		} else {
 			errorResponse = "An internal error occurred while processing your request. Please try again later."
 		}
